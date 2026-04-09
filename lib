@@ -4645,17 +4645,7 @@ function elements:AddDropdown(Config: Dropdown)
 				Value_Text.Text = DataParser(Config.Default);
 				res:change_default(Config.Default);
 				
-				for _, data in pairs(DropdownButtons) do
-					if data.Btn and data.Btn.Parent then
-						local isSelected = false
-						if Config.Multi then
-							isSelected = Config.Default[data.Value] == true
-						else
-							isSelected = (Config.Default == data.Value)
-						end
-						data.Btn.TextColor3 = isSelected and Fatality:GetColor("Main") or Fatality:GetColor("Text")
-					end
-				end
+				res:refresh();
 				
 				if force then Config.Callback(def) end
 			end,
@@ -5746,8 +5736,12 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 				local flags = Fatal:GetFlagConfig();
 				flags.Info = {Name = Name, Folder = Folder, ConfigName = safeName};
 				res:SaveConfig(safeName, game:GetService('HttpService'):JSONEncode(flags));
-				task.wait(0.1); 
-				res:ReloadConfig();
+				
+				if not table.find(Configs, safeName) then
+					table.insert(Configs, safeName)
+					res:Refresh()
+				end
+				
 				Fatal.Notifier:Notify({Title="Config", Content="Saved config '"..tostring(safeName).."'", Icon="settings", Duration=4});
 				TextBox.Text = "";
 			end);
@@ -5759,8 +5753,7 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 					local flags = Fatal:GetFlagConfig();
 					flags.Info = {Name = Name, Folder = Folder, ConfigName = import.Name, Type = "Overwrite"};
 					res:SaveConfig(import.Name, game:GetService('HttpService'):JSONEncode(flags));
-					task.wait(0.1); 
-					res:ReloadConfig();
+					
 					Fatal.Notifier:Notify({Title="Config", Content="Saved config '"..tostring(import.Name).."'", Icon="settings", Duration=4});
 				end;
 			end);
@@ -5774,8 +5767,13 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 				if import and import.Name then
 					Fatal.Notifier:Notify({Title="Config", Content="Deleted config '"..tostring(import.Name).."'", Icon="settings", Duration=4});
 					res:DeleteConfig(import.Name); 
-					task.wait(0.1); 
-					res:ReloadConfig(); 
+					
+					local idx = table.find(Configs, import.Name)
+					if idx then
+						table.remove(Configs, idx)
+						res:Refresh()
+					end
+					
 					import.Name = nil; import.Element = nil
 				end;
 			end)
