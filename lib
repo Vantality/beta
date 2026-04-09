@@ -4645,6 +4645,18 @@ function elements:AddDropdown(Config: Dropdown)
 				Value_Text.Text = DataParser(Config.Default);
 				res:change_default(Config.Default);
 				
+				for _, data in pairs(DropdownButtons) do
+					if data.Btn and data.Btn.Parent then
+						local isSelected = false
+						if Config.Multi then
+							isSelected = Config.Default[data.Value] == true
+						else
+							isSelected = (Config.Default == data.Value)
+						end
+						data.Btn.TextColor3 = isSelected and Fatality:GetColor("Main") or Fatality:GetColor("Text")
+					end
+				end
+				
 				if force then Config.Callback(def) end
 			end,
 			SetData = function(def)
@@ -5662,6 +5674,7 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 		ReloadConfig = function()
 			if not res.ConfigDirectory then return end
 			local files = {};
+			local seen = {}; 
 			local dirPath = string.gsub(res.ConfigDirectory, "\\", "/")
 			local list = listfiles(dirPath)
 			if type(list) == "table" then
@@ -5670,7 +5683,10 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 					local fileName = string.match(normPath, "[^/]+$") or normPath
 					if fileName and fileName ~= "" and string.match(fileName, "%.json$") then
 						local cleanName = string.gsub(fileName, "%.json$", "")
-						table.insert(files, cleanName);
+						if not seen[cleanName] then
+							seen[cleanName] = true
+							table.insert(files, cleanName);
+						end
 					end
 				end
 			end
@@ -5730,6 +5746,7 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 				local flags = Fatal:GetFlagConfig();
 				flags.Info = {Name = Name, Folder = Folder, ConfigName = safeName};
 				res:SaveConfig(safeName, game:GetService('HttpService'):JSONEncode(flags));
+				task.wait(0.1); 
 				res:ReloadConfig();
 				Fatal.Notifier:Notify({Title="Config", Content="Saved config '"..tostring(safeName).."'", Icon="settings", Duration=4});
 				TextBox.Text = "";
@@ -5742,6 +5759,7 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 					local flags = Fatal:GetFlagConfig();
 					flags.Info = {Name = Name, Folder = Folder, ConfigName = import.Name, Type = "Overwrite"};
 					res:SaveConfig(import.Name, game:GetService('HttpService'):JSONEncode(flags));
+					task.wait(0.1); 
 					res:ReloadConfig();
 					Fatal.Notifier:Notify({Title="Config", Content="Saved config '"..tostring(import.Name).."'", Icon="settings", Duration=4});
 				end;
@@ -5755,7 +5773,10 @@ function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButt
 			DeleteButton.MouseButton1Click:Connect(function()
 				if import and import.Name then
 					Fatal.Notifier:Notify({Title="Config", Content="Deleted config '"..tostring(import.Name).."'", Icon="settings", Duration=4});
-					res:DeleteConfig(import.Name); res:ReloadConfig(); import.Name = nil; import.Element = nil
+					res:DeleteConfig(import.Name); 
+					task.wait(0.1); 
+					res:ReloadConfig(); 
+					import.Name = nil; import.Element = nil
 				end;
 			end)
 		end,
