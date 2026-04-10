@@ -7365,8 +7365,8 @@ function Fatal:AddMenu(Menu : Menu)
 
 	function Fatal:InitHoliday(Config)
 		Config = Config or {}
-		MascotImg.Image = Config.MascotImage or ""
-		Fatal.HolidayState.Particles.Images = Config.ParticleImages or {""}
+		MascotImg.Image = Config.MascotImage or "rbxassetid://79279979693699"
+		Fatal.HolidayState.Particles.Images = Config.ParticleImages or {"rbxassetid://80131833917905", "rbxassetid://125571352815581", "rbxassetid://102097359445566", "rbxassetid://131567563653537"}
 		Fatal.HolidayState.Particles.Colors = Config.ParticleColors or {Color3.new(1,1,1)}
 		Fatal.HolidayState.MainEnabled = true
 	end
