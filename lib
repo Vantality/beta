@@ -6711,7 +6711,6 @@ function Fatal:AddMenu(Menu : Menu)
 			Section.BorderSizePixel = 0
 			Section.ClipsDescendants = true
 			Section.Size = UDim2.new(1, 0, 0, 0)
-			Section.ZIndex = 5
 			Elements.Name = Fatality:RandomString()
 			Elements.Parent = Section
 			Elements.AnchorPoint = Vector2.new(0.5, 1)
@@ -6721,7 +6720,6 @@ function Fatal:AddMenu(Menu : Menu)
 			Elements.BorderSizePixel = 0
 			Elements.Position = UDim2.new(0.5, 0, 1, -1)
 			Elements.Size = UDim2.new(1, -5, 1, -10)
-			Elements.ZIndex = 6
 			UIStroke.Color = Color3.fromRGB(29, 29, 29)
 			Fatality:Register(UIStroke, "Stroke", "Color")
 			UIStroke.Parent = Elements
@@ -6747,7 +6745,6 @@ function Fatal:AddMenu(Menu : Menu)
 			SectionName.Size = UDim2.new(1, 0, 0, 15)
 			SectionName.FontFace = Fatality.FontSemiBold;
 			SectionName.Text = Config.Name
-			SectionName.ZIndex = 7
 			Fatality:Register(SectionName, "Text", "TextColor3")
 			SectionName.TextSize = 15.000
 			SectionName.TextStrokeTransparency = 0.750
@@ -7245,7 +7242,6 @@ function Fatal:AddMenu(Menu : Menu)
 	end
 
 	-- events WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-
 	local HolidayGUI = Instance.new("ScreenGui")
 	HolidayGUI.Name = "Fatality_HolidayParticles"
 	HolidayGUI.IgnoreGuiInset = true
@@ -7257,14 +7253,6 @@ function Fatal:AddMenu(Menu : Menu)
 	ParticlesContainer.Size = UDim2.fromScale(1, 1)
 	ParticlesContainer.BackgroundTransparency = 1
 	ParticlesContainer.Parent = HolidayGUI
-
-	local PatternContainer = Instance.new("Frame")
-	PatternContainer.Name = "HolidayPatternContainer"
-	PatternContainer.BackgroundTransparency = 1
-	PatternContainer.ZIndex = 2 
-	PatternContainer.Size = UDim2.fromScale(1, 1)
-	PatternContainer.ClipsDescendants = true
-	PatternContainer.Parent = FatalFrame
 
 	local MascotContainer = Instance.new("Frame")
 	MascotContainer.Name = "MascotContainer"
@@ -7292,57 +7280,11 @@ function Fatal:AddMenu(Menu : Menu)
 	MascotImg.Visible = false
 
 	Fatal.HolidayState = {
-		MainEnabled = true,
+		MainEnabled = false,
 		Mascot = { Enabled = false, Position = "Left", Size = 120 },
-		Pattern = { Enabled = false, Size = 100, Transparency = 0.85, Index = 1, Count = 10, Images = {}, Color = Color3.fromRGB(15,15,15) },
 		Particles = { Enabled = false, Count = 800, Speed = 40, Size = 15, Index = 0, Images = {}, Colors = {} },
-		ActiveParticles = {},
-		ActivePatterns = {} 
+		ActiveParticles = {}
 	}
-
-	local function UpdatePatterns()
-		local pState = Fatal.HolidayState.Pattern
-		
-		while #Fatal.HolidayState.ActivePatterns > pState.Count do
-			local img = table.remove(Fatal.HolidayState.ActivePatterns)
-			img:Destroy()
-		end
-		
-		while #Fatal.HolidayState.ActivePatterns < pState.Count do
-			local img = Instance.new("ImageLabel")
-			img.BackgroundTransparency = 1
-			img.AnchorPoint = Vector2.new(0.5, 0.5)
-			img.Position = UDim2.new(math.random(), 0, math.random(), 0)
-			img.Rotation = math.random(-35, 35)
-			img.ZIndex = 2
-			img.Parent = PatternContainer
-			table.insert(Fatal.HolidayState.ActivePatterns, img)
-		end
-		
-		local activeImage = pState.Images[pState.Index] or pState.Images[1] or ""
-		for _, img in ipairs(Fatal.HolidayState.ActivePatterns) do
-			img.Image = activeImage
-			img.ImageColor3 = pState.Color
-			img.Size = UDim2.fromOffset(pState.Size, pState.Size)
-			img.Visible = Fatal.HolidayState.MainEnabled and pState.Enabled
-			
-			if FatalFrame.BackgroundTransparency == 0 then
-				img.ImageTransparency = pState.Transparency
-			end
-		end
-	end
-
-	FatalFrame:GetPropertyChangedSignal("BackgroundTransparency"):Connect(function()
-		local bgTrans = FatalFrame.BackgroundTransparency
-		local pState = Fatal.HolidayState.Pattern
-		local targetTrans = 1
-		if Fatal.HolidayState.MainEnabled and pState.Enabled then
-			targetTrans = pState.Transparency + (1 - pState.Transparency) * bgTrans
-		end
-		for _, img in ipairs(Fatal.HolidayState.ActivePatterns) do
-			img.ImageTransparency = targetTrans
-		end
-	end)
 
 	local function ResetParticle(p)
 		p.Pos = Vector2.new(math.random(0, CurrentCamera.ViewportSize.X), math.random(-CurrentCamera.ViewportSize.Y, -20))
@@ -7414,15 +7356,8 @@ function Fatal:AddMenu(Menu : Menu)
 	function Fatal:InitHoliday(Config)
 		Config = Config or {}
 		MascotImg.Image = Config.MascotImage or ""
-		
-		local pState = Fatal.HolidayState.Pattern
-		pState.Images = Config.PatternImages or {""}
-		pState.Color = Config.PatternColor or Color3.fromRGB(15,15,15)
-		
 		Fatal.HolidayState.Particles.Images = Config.ParticleImages or {""}
 		Fatal.HolidayState.Particles.Colors = Config.ParticleColors or {Color3.new(1,1,1)}
-		
-		UpdatePatterns()
 	end
 
 	function Fatal:UpdateHoliday(Category, Setting, Value)
@@ -7430,7 +7365,6 @@ function Fatal:AddMenu(Menu : Menu)
 		if Category == "Main" and Setting == "Enabled" then
 			state.MainEnabled = Value
 			MascotImg.Visible = Value and state.Mascot.Enabled
-			UpdatePatterns()
 		elseif state[Category] then
 			state[Category][Setting] = Value
 			
@@ -7441,14 +7375,6 @@ function Fatal:AddMenu(Menu : Menu)
 					if Value == "Left" then MascotImg.AnchorPoint = Vector2.new(0, 1); MascotImg.Position = UDim2.new(0, 20, 0, 15)
 					elseif Value == "Center" then MascotImg.AnchorPoint = Vector2.new(0.5, 1); MascotImg.Position = UDim2.new(0.5, 0, 0, 15)
 					elseif Value == "Right" then MascotImg.AnchorPoint = Vector2.new(1, 1); MascotImg.Position = UDim2.new(1, -20, 0, 15) end
-				end
-			elseif Category == "Pattern" then
-				if Setting == "Enabled" or Setting == "Size" or Setting == "Count" or Setting == "Index" then 
-					UpdatePatterns()
-				elseif Setting == "Transparency" then 
-					if FatalFrame.BackgroundTransparency == 0 then
-						for _, img in ipairs(state.ActivePatterns) do img.ImageTransparency = Value end
-					end
 				end
 			elseif Category == "Particles" then
 				if Setting == "Index" then
