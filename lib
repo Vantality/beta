@@ -7257,11 +7257,21 @@ function Fatal:AddMenu(Menu : Menu)
 	local PatternImg = Instance.new("ImageLabel")
 	PatternImg.Name = "HolidayPattern"
 	PatternImg.BackgroundTransparency = 1
-	PatternImg.ZIndex = 0 -- Задний фон UI (под секциями)
+	PatternImg.ZIndex = 1 
 	PatternImg.Size = UDim2.fromScale(1, 1)
 	PatternImg.ScaleType = Enum.ScaleType.Tile
 	PatternImg.Parent = FatalFrame
 	PatternImg.Visible = false
+
+	FatalFrame:GetPropertyChangedSignal("BackgroundTransparency"):Connect(function()
+		if Fatal.HolidayState and Fatal.HolidayState.MainEnabled and Fatal.HolidayState.Pattern.Enabled then
+			local baseTrans = Fatal.HolidayState.Pattern.Transparency
+			local bgTrans = FatalFrame.BackgroundTransparency
+			PatternImg.ImageTransparency = baseTrans + (1 - baseTrans) * bgTrans
+		else
+			PatternImg.ImageTransparency = 1
+		end
+	end)
 
 	local MascotContainer = Instance.new("Frame")
 	MascotContainer.Name = "MascotContainer"
@@ -7399,9 +7409,14 @@ function Fatal:AddMenu(Menu : Menu)
 					elseif Value == "Right" then MascotImg.AnchorPoint = Vector2.new(1, 1); MascotImg.Position = UDim2.new(1, -20, 0, 15) end
 				end
 			elseif Category == "Pattern" then
-				if Setting == "Enabled" then PatternImg.Visible = state.MainEnabled and Value end
+				if Setting == "Enabled" then 
+					PatternImg.Visible = state.MainEnabled and Value 
+					if state.MainEnabled and Value and FatalFrame.BackgroundTransparency == 0 then PatternImg.ImageTransparency = state.Pattern.Transparency end
+				end
 				if Setting == "Size" then PatternImg.TileSize = UDim2.fromOffset(Value, Value) end
-				if Setting == "Transparency" then PatternImg.ImageTransparency = Value end
+				if Setting == "Transparency" then 
+					if FatalFrame.BackgroundTransparency == 0 then PatternImg.ImageTransparency = Value end 
+				end
 				if Setting == "Index" then
 					local imgs = state.Pattern.Images
 					PatternImg.Image = imgs[Value] or imgs[1] or ""
