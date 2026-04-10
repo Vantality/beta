@@ -7277,7 +7277,7 @@ function Fatal:AddMenu(Menu : Menu)
 	MascotImg.BackgroundTransparency = 1
 	MascotImg.ZIndex = 1000 
 	MascotImg.AnchorPoint = Vector2.new(0, 1)
-	MascotImg.Position = UDim2.new(0, 20, 0, 15)
+	MascotImg.Position = UDim2.new(0, 10, 0, 15)
 	MascotImg.Size = UDim2.fromOffset(120, 120)
 	MascotImg.Parent = MascotContainer
 	MascotImg.Visible = false
