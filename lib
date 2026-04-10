@@ -7241,6 +7241,160 @@ function Fatal:AddMenu(Menu : Menu)
 		ToggleUI(true);
 	end
 
+	-- events WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+	local HolidayGUI = Instance.new("ScreenGui")
+	HolidayGUI.Name = "Vantality_HolidayParticles"
+	HolidayGUI.IgnoreGuiInset = true
+	HolidayGUI.DisplayOrder = Fatalitywin.DisplayOrder - 1
+	HolidayGUI.Parent = CoreGui
+	HolidayGUI.Enabled = false
+
+	local ParticlesContainer = Instance.new("Frame")
+	ParticlesContainer.Size = UDim2.fromScale(1, 1)
+	ParticlesContainer.BackgroundTransparency = 1
+	ParticlesContainer.Parent = HolidayGUI
+
+	local PatternImg = Instance.new("ImageLabel")
+	PatternImg.Name = "HolidayPattern"
+	PatternImg.BackgroundTransparency = 1
+	PatternImg.ZIndex = 0
+	PatternImg.Size = UDim2.fromScale(1, 1)
+	PatternImg.ScaleType = Enum.ScaleType.Tile
+	PatternImg.Parent = FatalFrame
+	PatternImg.Visible = false
+
+	local MascotImg = Instance.new("ImageLabel")
+	MascotImg.Name = "HolidayMascot"
+	MascotImg.BackgroundTransparency = 1
+	MascotImg.ZIndex = 1000 
+	MascotImg.AnchorPoint = Vector2.new(0, 1)
+	MascotImg.Position = UDim2.new(0, 20, 0, 15)
+	MascotImg.Size = UDim2.fromOffset(120, 120)
+	MascotImg.Parent = FatalFrame
+	MascotImg.Visible = false
+
+	Fatal.HolidayState = {
+		MainEnabled = false,
+		Mascot = { Enabled = false, Position = "Left", Size = 120 },
+		Pattern = { Enabled = false, Size = 100, Transparency = 0.85, Index = 1, Images = {} },
+		Particles = { Enabled = false, Count = 800, Speed = 40, Size = 15, Index = 0, Images = {}, Colors = {} },
+		ActiveParticles = {}
+	}
+
+	local function ResetParticle(p)
+		p.Pos = Vector2.new(math.random(0, CurrentCamera.ViewportSize.X), math.random(-CurrentCamera.ViewportSize.Y, -20))
+		p.Vel = Vector2.new(0, 0)
+		p.BaseSpeed = math.random(Fatal.HolidayState.Particles.Speed * 0.5, Fatal.HolidayState.Particles.Speed * 1.5)
+		p.Sway = math.random() * 6.28
+		p.RotSpeed = math.random(-100, 100) / 100
+		p.TargetTrans = math.random(10, 50) / 100
+		p.Size = Fatal.HolidayState.Particles.Size + math.random(-4, 4)
+		
+		local imgs = Fatal.HolidayState.Particles.Images
+		local idx = Fatal.HolidayState.Particles.Index
+		if idx == 0 or idx > #imgs then idx = math.random(1, math.max(1, #imgs)) end
+		p.Obj.Image = imgs[idx] or ""
+		
+		local cols = Fatal.HolidayState.Particles.Colors
+		p.Obj.ImageColor3 = cols[math.random(1, math.max(1, #cols))] or Color3.new(1,1,1)
+	end
+
+	local function SpawnParticle()
+		local img = Instance.new("ImageLabel")
+		img.BackgroundTransparency = 1
+		img.Parent = ParticlesContainer
+		local p = { Obj = img }
+		ResetParticle(p)
+		p.Pos = Vector2.new(math.random(0, CurrentCamera.ViewportSize.X), math.random(0, CurrentCamera.ViewportSize.Y))
+		return p
+	end
+
+	RunService.RenderStepped:Connect(function(dt)
+		local state = Fatal.HolidayState
+		if not Fatal.Toggle or not state.MainEnabled or not state.Particles.Enabled then
+			HolidayGUI.Enabled = false
+			return
+		end
+		HolidayGUI.Enabled = true
+
+		while #state.ActiveParticles < state.Particles.Count do table.insert(state.ActiveParticles, SpawnParticle()) end
+		while #state.ActiveParticles > state.Particles.Count do
+			local p = table.remove(state.ActiveParticles)
+			if p and p.Obj then p.Obj:Destroy() end
+		end
+
+		local mousePos = UserInputService:GetMouseLocation()
+		local vpSize = CurrentCamera.ViewportSize
+		local time = os.clock()
+
+		for i, p in ipairs(state.ActiveParticles) do
+			local sway = math.sin((time * 2) + p.Sway) * 20
+			local dir = p.Pos - mousePos
+			local dist = dir.Magnitude
+			
+			if dist < 90 then
+				local force = (1 - (dist / 90)) * 700
+				p.Vel = p.Vel + (dir.Unit * force * dt)
+			end
+			
+			p.Pos = p.Pos + (Vector2.new(sway, p.BaseSpeed) * dt) + (p.Vel * dt)
+			p.Vel = p.Vel * 0.98
+			p.Obj.Rotation = p.Obj.Rotation + p.RotSpeed
+			p.Obj.Position = UDim2.fromOffset(p.Pos.X, p.Pos.Y)
+			p.Obj.Size = UDim2.fromOffset(p.Size, p.Size)
+			p.Obj.ImageTransparency = p.TargetTrans
+
+			if p.Pos.Y > vpSize.Y + p.Size then ResetParticle(p) end
+		end
+	end)
+
+	function Fatal:InitHoliday(Config)
+		Config = Config or {}
+		MascotImg.Image = Config.MascotImage or ""
+		Fatal.HolidayState.Pattern.Images = Config.PatternImages or {""}
+		PatternImg.ImageColor3 = Config.PatternColor or Color3.fromRGB(15,15,15)
+		PatternImg.Image = Fatal.HolidayState.Pattern.Images[1] or ""
+		Fatal.HolidayState.Particles.Images = Config.ParticleImages or {""}
+		Fatal.HolidayState.Particles.Colors = Config.ParticleColors or {Color3.new(1,1,1)}
+	end
+
+	function Fatal:UpdateHoliday(Category, Setting, Value)
+		local state = Fatal.HolidayState
+		if Category == "Main" and Setting == "Enabled" then
+			state.MainEnabled = Value
+			MascotImg.Visible = Value and state.Mascot.Enabled
+			PatternImg.Visible = Value and state.Pattern.Enabled
+		elseif state[Category] then
+			state[Category][Setting] = Value
+			
+			if Category == "Mascot" then
+				if Setting == "Enabled" then MascotImg.Visible = state.MainEnabled and Value end
+				if Setting == "Size" then MascotImg.Size = UDim2.fromOffset(Value, Value) end
+				if Setting == "Position" then
+					if Value == "Left" then MascotImg.AnchorPoint = Vector2.new(0, 1); MascotImg.Position = UDim2.new(0, 20, 0, 15)
+					elseif Value == "Center" then MascotImg.AnchorPoint = Vector2.new(0.5, 1); MascotImg.Position = UDim2.new(0.5, 0, 0, 15)
+					elseif Value == "Right" then MascotImg.AnchorPoint = Vector2.new(1, 1); MascotImg.Position = UDim2.new(1, -20, 0, 15) end
+				end
+			elseif Category == "Pattern" then
+				if Setting == "Enabled" then PatternImg.Visible = state.MainEnabled and Value end
+				if Setting == "Size" then PatternImg.TileSize = UDim2.fromOffset(Value, Value) end
+				if Setting == "Transparency" then PatternImg.ImageTransparency = Value end
+				if Setting == "Index" then
+					local imgs = state.Pattern.Images
+					PatternImg.Image = imgs[Value] or imgs[1] or ""
+				end
+			elseif Category == "Particles" then
+				if Setting == "Index" then
+					for _, p in ipairs(state.ActiveParticles) do
+						local imgs = state.Particles.Images
+						p.Obj.Image = (Value == 0) and (imgs[math.random(1, #imgs)] or "") or (imgs[Value] or "")
+					end
+				end
+			end
+		end
+	end
+	-- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+
 	return Fatal;
 end;
 
