@@ -7243,7 +7243,7 @@ function Fatal:AddMenu(Menu : Menu)
 
 	-- events WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 	local HolidayGUI = Instance.new("ScreenGui")
-	HolidayGUI.Name = "Vantality_HolidayParticles"
+	HolidayGUI.Name = "Fatality_HolidayParticles"
 	HolidayGUI.IgnoreGuiInset = true
 	HolidayGUI.DisplayOrder = Fatalitywin.DisplayOrder - 1
 	HolidayGUI.Parent = CoreGui
@@ -7257,11 +7257,28 @@ function Fatal:AddMenu(Menu : Menu)
 	local PatternImg = Instance.new("ImageLabel")
 	PatternImg.Name = "HolidayPattern"
 	PatternImg.BackgroundTransparency = 1
-	PatternImg.ZIndex = 0
+	PatternImg.ZIndex = 0 -- Задний фон UI (под секциями)
 	PatternImg.Size = UDim2.fromScale(1, 1)
 	PatternImg.ScaleType = Enum.ScaleType.Tile
 	PatternImg.Parent = FatalFrame
 	PatternImg.Visible = false
+
+	local MascotContainer = Instance.new("Frame")
+	MascotContainer.Name = "MascotContainer"
+	MascotContainer.BackgroundTransparency = 1
+	MascotContainer.Size = Window.Scale
+	MascotContainer.Position = FatalFrame.Position
+	MascotContainer.AnchorPoint = FatalFrame.AnchorPoint
+	MascotContainer.ZIndex = 1000
+	MascotContainer.Parent = Fatalitywin
+	
+	local MascotScale = Instance.new("UIScale", MascotContainer)
+	MascotScale.Scale = Fatality.Scale
+	table.insert(Fatality.ScalesRegistry, MascotScale)
+
+	FatalFrame:GetPropertyChangedSignal("Position"):Connect(function()
+		MascotContainer.Position = FatalFrame.Position
+	end)
 
 	local MascotImg = Instance.new("ImageLabel")
 	MascotImg.Name = "HolidayMascot"
@@ -7270,11 +7287,11 @@ function Fatal:AddMenu(Menu : Menu)
 	MascotImg.AnchorPoint = Vector2.new(0, 1)
 	MascotImg.Position = UDim2.new(0, 20, 0, 15)
 	MascotImg.Size = UDim2.fromOffset(120, 120)
-	MascotImg.Parent = FatalFrame
+	MascotImg.Parent = MascotContainer -- [ФИКС 1]: Теперь маскот вне зоны обрезки!
 	MascotImg.Visible = false
 
 	Fatal.HolidayState = {
-		MainEnabled = false,
+		MainEnabled = true,
 		Mascot = { Enabled = false, Position = "Left", Size = 120 },
 		Pattern = { Enabled = false, Size = 100, Transparency = 0.85, Index = 1, Images = {} },
 		Particles = { Enabled = false, Count = 800, Speed = 40, Size = 15, Index = 0, Images = {}, Colors = {} },
@@ -7351,9 +7368,15 @@ function Fatal:AddMenu(Menu : Menu)
 	function Fatal:InitHoliday(Config)
 		Config = Config or {}
 		MascotImg.Image = Config.MascotImage or ""
-		Fatal.HolidayState.Pattern.Images = Config.PatternImages or {""}
+		
+		local pState = Fatal.HolidayState.Pattern
+		pState.Images = Config.PatternImages or {""}
 		PatternImg.ImageColor3 = Config.PatternColor or Color3.fromRGB(15,15,15)
-		PatternImg.Image = Fatal.HolidayState.Pattern.Images[1] or ""
+		PatternImg.Image = pState.Images[pState.Index] or ""
+		
+		PatternImg.TileSize = UDim2.fromOffset(pState.Size, pState.Size)
+		PatternImg.ImageTransparency = pState.Transparency
+		
 		Fatal.HolidayState.Particles.Images = Config.ParticleImages or {""}
 		Fatal.HolidayState.Particles.Colors = Config.ParticleColors or {Color3.new(1,1,1)}
 	end
