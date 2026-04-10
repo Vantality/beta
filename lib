@@ -7242,6 +7242,9 @@ function Fatal:AddMenu(Menu : Menu)
 	end
 
 	-- events WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+	local oldHoliday = CoreGui:FindFirstChild("Fatality_HolidayParticles")
+	if oldHoliday then oldHoliday:Destroy() end
+
 	local HolidayGUI = Instance.new("ScreenGui")
 	HolidayGUI.Name = "Fatality_HolidayParticles"
 	HolidayGUI.IgnoreGuiInset = true
@@ -7280,9 +7283,9 @@ function Fatal:AddMenu(Menu : Menu)
 	MascotImg.Visible = false
 
 	Fatal.HolidayState = {
-		MainEnabled = true,
-		Mascot = { Enabled = false, Position = "Left", Size = 120 },
-		Particles = { Enabled = false, Count = 400, Speed = 40, Size = 20, Index = 0, Images = {}, Colors = {} },
+		MainEnabled = true, 
+		Mascot = { Enabled = true, Position = "Left", Size = 120 },
+		Particles = { Enabled = true, Count = 400, Speed = 40, Size = 15, Index = 0, Images = {}, Colors = {} },
 		ActiveParticles = {}
 	}
 
@@ -7314,7 +7317,14 @@ function Fatal:AddMenu(Menu : Menu)
 		return p
 	end
 
-	RunService.RenderStepped:Connect(function(dt)
+	local HolidayRenderConn
+	HolidayRenderConn = RunService.RenderStepped:Connect(function(dt)
+		if not FatalFrame or not FatalFrame.Parent then
+			if HolidayRenderConn then HolidayRenderConn:Disconnect() end
+			if HolidayGUI then HolidayGUI:Destroy() end
+			return
+		end
+
 		local state = Fatal.HolidayState
 		if not Fatal.Toggle or not state.MainEnabled or not state.Particles.Enabled then
 			HolidayGUI.Enabled = false
@@ -7358,6 +7368,7 @@ function Fatal:AddMenu(Menu : Menu)
 		MascotImg.Image = Config.MascotImage or ""
 		Fatal.HolidayState.Particles.Images = Config.ParticleImages or {""}
 		Fatal.HolidayState.Particles.Colors = Config.ParticleColors or {Color3.new(1,1,1)}
+		Fatal.HolidayState.MainEnabled = true
 	end
 
 	function Fatal:UpdateHoliday(Category, Setting, Value)
