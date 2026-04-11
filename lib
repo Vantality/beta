@@ -379,7 +379,7 @@ function Fatality:SetTheme(NewTheme)
 		"Background",
 		"Container", "Element", "Stroke", "Outline",
 		"Text", "TextDark",
-		"Main", "Hover", "TabActive" -
+		"Main", "Hover", "TabActive"
 	}
 	
 	local TS = game:GetService("TweenService")
