@@ -7285,7 +7285,7 @@ function Fatal:AddMenu(Menu : Menu)
 	Fatal.HolidayState = {
 		MainEnabled = true, 
 		Mascot = { Enabled = true, Position = "Left", Size = 120 },
-		Particles = { Enabled = true, Count = 400, Speed = 40, Size = 15, Index = 0, Images = {}, Colors = {} },
+		Particles = { Enabled = false, Count = 0, Speed = 40, Size = 15, Index = 0, Images = {}, Colors = {} },
 		ActiveParticles = {}
 	}
 
@@ -7383,7 +7383,7 @@ function Fatal:AddMenu(Menu : Menu)
 				if Setting == "Enabled" then MascotImg.Visible = state.MainEnabled and Value end
 				if Setting == "Size" then MascotImg.Size = UDim2.fromOffset(Value, Value) end
 				if Setting == "Position" then
-					if Value == "Left" then MascotImg.AnchorPoint = Vector2.new(0, 1); MascotImg.Position = UDim2.new(0, 20, 0, 15)
+					if Value == "Left" then MascotImg.AnchorPoint = Vector2.new(0, 1); MascotImg.Position = UDim2.new(0, 10, 0, 15)
 					elseif Value == "Center" then MascotImg.AnchorPoint = Vector2.new(0.5, 1); MascotImg.Position = UDim2.new(0.5, 0, 0, 15)
 					elseif Value == "Right" then MascotImg.AnchorPoint = Vector2.new(1, 1); MascotImg.Position = UDim2.new(1, -20, 0, 15) end
 				end
