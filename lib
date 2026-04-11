@@ -7280,9 +7280,9 @@ function Fatal:AddMenu(Menu : Menu)
 	MascotImg.Position = UDim2.new(0, 10, 0, 15)
 	MascotImg.Size = UDim2.fromOffset(120, 120)
 	MascotImg.Parent = MascotContainer
-	MascotImg.Visible = false
+	MascotImg.Visible = true
 
-	Fatal.HolidayState = {
+	Fatal.HolidayState = { -- стэйты
 		MainEnabled = true, 
 		Mascot = { Enabled = true, Position = "Left", Size = 120 },
 		Particles = { Enabled = false, Count = 0, Speed = 40, Size = 15, Index = 0, Images = {}, Colors = {} },
