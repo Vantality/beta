@@ -2,7 +2,6 @@
     Fatality Interface
 	Modded by: grab1s
     Author: 4lpaca
-    License: MIT
     Github: https://github.com/4lpaca-pin/Fatality
 --]]
 
@@ -4564,9 +4563,9 @@ function elements:AddDropdown(Config: Dropdown)
 		Value_Text.ZIndex = ZIndex + 5
 		Value_Text.FontFace = Fatality.FontSemiBold
 		Value_Text.Text = DataParser(Config.Default)
-		Value_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Fatality:Register(Value_Text, "Text", "TextColor3") 
 		Value_Text.TextSize = 10.000
-		Value_Text.TextTransparency = 0.500
+		Value_Text.TextTransparency = 0.400
 		Value_Text.TextXAlignment = Enum.TextXAlignment.Left
 		Value_Text.TextYAlignment = Enum.TextYAlignment.Top
 		Value_Text.TextWrapped = true
@@ -4609,7 +4608,7 @@ function elements:AddDropdown(Config: Dropdown)
 					ImageTransparency = 0
 				})
 				Fatality:CreateAnimation(Value_Text,0.45,{
-					TextTransparency = 0.5
+					TextTransparency = 0.4
 				})
 				Fatality:CreateAnimation(OptionButton,0.45,{
 					ImageTransparency = (Config.Option and 0.6) or 1,
@@ -4779,7 +4778,7 @@ function elements:AddDropdown(Config: Dropdown)
 		ValueText.ZIndex = ZIndex + 3
 		ValueText.FontFace = Fatality.FontSemiBold
 		ValueText.Text = GetItem(Config.Default)
-		ValueText.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Fatality:Register(ValueText, "Text", "TextColor3") 
 		ValueText.TextSize = 9.000
 		ValueText.TextStrokeTransparency = 0.850
 		ValueText.TextTransparency = 0.400
