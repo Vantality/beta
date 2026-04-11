@@ -6284,7 +6284,7 @@ function Fatal:AddMenu(Menu : Menu)
 
 		MenuButton.Name = Fatality:RandomString()
 		MenuButton.Parent = tbc;
-		Fatality:Register(MenuButton, "Container") 
+		Fatality:Register(MenuButton, "Hover") 
 		MenuButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		MenuButton.BorderSizePixel = 0
 		MenuButton.Size = UDim2.new(0, 90, 0.85, 0)
